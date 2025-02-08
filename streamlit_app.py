@@ -1,14 +1,19 @@
 import streamlit as st
 from openai import OpenAI
+import requests
+import base64
+
+# 设置你的TTS API密钥（这里用ElevenLabs示例，可替换为其他TTS服务）
+TTS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
+TTS_API_KEY = "your-tts-api-key"  # 替换为你的TTS API Key
 
 # Show title and description.
-st.title("📄 Document question answering")
+st.title("📄 Document Question Answering with Text-to-Speech")
 st.write(
-    "Upload a document below and ask a question about it – GPT will answer! "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
+    "Upload a document, ask a question, and listen to the AI-generated response!"
 )
 
-# 嵌入 HTML5 视频播放器
+# 嵌入 HTML5 视频播放器（可选）
 video_html = """
     <video width="100%" height="auto" controls>
         <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
@@ -48,12 +53,44 @@ else:
         ]
 
         # Generate an answer using the OpenAI API.
-        stream = client.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=messages,
-            stream=True,
         )
+        answer = response.choices[0].message.content
+        st.write("### AI Response:")
+        st.write(answer)
 
-        # Stream the response to the app using `st.write_stream`.
-        st.write_stream(stream)
+        # 调用 TTS API 将文本转换为语音
+        def text_to_speech(text):
+            headers = {
+                "xi-api-key": TTS_API_KEY,
+                "Content-Type": "application/json"
+            }
+            data = {
+                "text": text,
+                "voice_settings": {"stability": 0.5, "similarity_boost": 0.8},
+                "voice": "Rachel"  # 替换为你的TTS API支持的声音
+            }
+
+            response = requests.post(TTS_API_URL, json=data, headers=headers)
+            if response.status_code == 200:
+                return response.content  # 返回音频二进制数据
+            else:
+                st.error("TTS API 出错，请检查 API Key 或请求参数")
+                return None
+
+        # 生成语音
+        audio_data = text_to_speech(answer)
+
+        if audio_data:
+            # 保存音频文件
+            audio_path = "output_audio.mp3"
+            with open(audio_path, "wb") as f:
+                f.write(audio_data)
+
+            # 在 Streamlit 页面播放音频
+            st.audio(audio_path, format="audio/mp3")
+
+
 
