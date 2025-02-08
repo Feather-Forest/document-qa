@@ -5,7 +5,7 @@ import base64
 
 # 设置你的TTS API密钥（这里用ElevenLabs示例，可替换为其他TTS服务）
 TTS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
-TTS_API_KEY = "sk_db9a0b6049ede0239b04e846d5144f232af58946e0e3a98c"  # 替换为你的TTS API Key
+TTS_API_KEY = "sk_bb981b42762f920904beaa5cadee3f18ac8166c487b34c12"  # 替换为你的TTS API Key
 
 # Show title and description.
 st.title("📄 Document Question Answering with Text-to-Speech")
